@@ -16,13 +16,13 @@ class UrlShortenerController extends Controller
         $shortCode = $this->generateShortCode($originalUrl);
         self::$urlMap[$shortCode] = $originalUrl;
 
-        return response()->json(['short_url' => "http://shortened.tld/{$shortCode}"]);
+        return response()->json(['short_url' => "http://{$shortCode}"]);
     }
 
     public function decode(Request $request)
     {
         $request->validate(['short_url' => 'required']);
-        $shortUrl = str_replace('http://shortened.tld/', '', $request->input('short_url'));
+        $shortUrl = str_replace('http://', '', $request->input('short_url'));
 
         if (!isset(self::$urlMap[$shortUrl])) {
             return response()->json(['error' => 'Short URL not found'], 404);
@@ -31,8 +31,12 @@ class UrlShortenerController extends Controller
         return response()->json(['original_url' => self::$urlMap[$shortUrl]]);
     }
 
-    private function generateShortCode($url)
+private function generateShortCode($url)
     {
-        return substr(base_convert(md5($url), 16, 36), 0, 7);
+        $md5Hash = md5($url);
+        $base62 = base_convert(substr($md5Hash, 0, 10), 16, 36); // Convert hex to base62-like
+        $short = substr($base62, 0, 5);
+        $tld = substr($base62, 5, 3);
+        return "{$short}.{$tld}";
     }
 }
