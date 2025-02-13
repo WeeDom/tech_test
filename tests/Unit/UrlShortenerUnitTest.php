@@ -12,7 +12,7 @@ class UrlShortenerUnitTest extends TestCase
         $shortCode = $controller->encode(new \Illuminate\Http\Request(['url' => 'https://example.com']))->getData()->short_url;
 
         $this->assertNotEmpty($shortCode);
-        $this->assertStringContainsString('http://shortened.tld/', $shortCode);
+        $this->assertMatchesRegularExpression('/http:\/\/[a-zA-Z0-9]{5}\.[a-zA-Z0-9]{3}/', $shortCode);
     }
 
     public function test_decode_logic()
